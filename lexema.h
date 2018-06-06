@@ -143,7 +143,7 @@ bool Lexema::isNumber(char c)
 
 bool Lexema::isWhiteSpace()
 {
-    if (lexema == "\n" || lexema == " " || lexema == "\t" || lexema == "")
+    if (lexema[0] == '\n' || lexema[0] == ' ' || lexema[0] == '\t' || lexema == "")
         return true;
     else
         return false;
@@ -152,8 +152,7 @@ bool Lexema::isWhiteSpace()
 bool Lexema::isWhiteSpace(char c)
 {
     string s = lexema+c;
-
-    if (s == "\n" || s == " " || s == "\t" || s == "")
+    if (s[0] == '\n' || s[0] == ' ' || s[0] == '\t' || s == "")
         return true;
     else
         return false;
@@ -187,7 +186,7 @@ string Lexema::getType()
         return "NUM";
     else if (isWhiteSpace())
         return "WHITESPACE";
-    else    
+    else
         return "ERROR";
 }
 
