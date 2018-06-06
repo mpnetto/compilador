@@ -1,3 +1,6 @@
+#ifndef _Token_H_
+#define _Token_H_
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -20,11 +23,13 @@ public:
     Token();
 
     void setToken(int linha, string tipo, string lexema);
+    string getType();
+    string getLex();
     string print();
 };
 
 Token::Token(){
-	
+
 }
 
 void Token::setToken(int linha, string tipo, string lexema)
@@ -34,6 +39,16 @@ void Token::setToken(int linha, string tipo, string lexema)
     this->lexema = lexema;
 }
 
+string Token::getType()
+{
+  return tipo;
+}
+
+string Token::getLex()
+{
+  return lexema;
+}
+
 string Token::print()
 {
 	stringstream ss;
@@ -41,3 +56,5 @@ string Token::print()
 
 	return ss.str();
 }
+
+#endif
