@@ -1,0 +1,29 @@
+program;int, void;$
+declaration-list;int, void;int, void, $
+declaration;int, void;int, void, $
+var-declaration;int, void;"ID, ;, NUM, int, void, (, {, }, if, while, return, $"
+type-specifier;int, void;ID
+fun-declaration;int, void;int, void, $
+params;int, void;)
+param-list;int, void;), ,
+param;int, void;), ,
+compound-stmt;{;"ID, ;, NUM, int, void, (, {, }, if, else, while, return, $"
+local-declarations;int, void;"ID, ;, NUM, int, void, (, {, }, if, while, return"
+statement-list;"ID, ;, NUM, (, {, if, while, return";"ID, ;, NUM, (, {, }, if, while, return"
+statement;"ID, ;, NUM, (, {, if, while, return";"ID, ;, NUM, (, {, }, if, else, while, return"
+expression-stmt;"ID, ;, NUM, (";"ID, ;, NUM, (, {, }, if, else, while, return"
+selection-stmt;if;"ID, ;, NUM, (, {, }, if, else, while, return"
+iteration-stmt;while;"ID, ;, NUM, (, {, }, if, else, while, return"
+return-stmt;return;"ID, ;, NUM, (, {, }, if, else, while, return"
+expression;ID, NUM, (;";, ], ), ,"
+var;ID;";, ], ), ,, =, <=, <, >, >=, ==, !=, +, -, *, /"
+simple-expression;ID, NUM, (;";, ], ), ,"
+relop;<=, <, >, >=, ==, !=;ID, NUM, (
+additive-expression;ID, NUM, (;";, ], ), ,, <=, <, >, >=, ==, !=, +, -"
+addop;+, -;ID, NUM, (
+term;ID, NUM, (;";, ], ), ,, <=, <, >, >=, ==, !=, +, -, *, /"
+mulop;*, /;ID, NUM, (
+factor;ID, NUM, (;";, ], ), ,, <=, <, >, >=, ==, !=, +, -, *, /"
+call;ID;";, ], ), ,, <=, <, >, >=, ==, !=, +, -, *, /"
+args;ID, NUM, (;)
+arg-list;ID, NUM, (;), ,
