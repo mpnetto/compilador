@@ -2,15 +2,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <utility>
 #include "token.h"
 
 #define SYM 57
 
 using namespace std;
 
-static const string  tab_symbols[SYM] ={ "ID", ";", "[", "NUM", "]", "int", "void", "(", ")", ",", "{", "}", "if", "else", "while",	"return", "=", 	"<=", "<", ">",	">=", "==",	"!=", "+", "-", "*", "/", "$", "program", "declaration-list",	"declaration", "var-declaration", "fun-declaration", "type-specifier", "params", "compound-stmt", "param-list", "param", "local-declarations", "statement-list", "statement", 	"expression-stmt", "selection-stmt", "iteration-stmt", "return-stmt", "expression",	"var", "simple-expression", "additive-expression", "relop", "addop", "term", "mulop", "factor", "call", "args", "arg-list"};
+static const string tab_symbols[SYM] ={ "ID", ";", "[", "NUM", "]", "int", "void", "(", ")", ",", "{", "}", "if", "else", "while",	"return", "=", 	"<=", "<", ">",	">=", "==",	"!=", "+", "-", "*", "/", "$", "program", "declaration-list",	"declaration", "var-declaration", "fun-declaration", "type-specifier", "params", "compound-stmt", "param-list", "param", "local-declarations", "statement-list", "statement", 	"expression-stmt", "selection-stmt", "iteration-stmt", "return-stmt", "expression",	"var", "simple-expression", "additive-expression", "relop", "addop", "term", "mulop", "factor", "call", "args", "arg-list"};
 
 string LRS[101][SYM];
+string FF_SET[30][3];
 
 vector<string> splitString(string str){
 
@@ -28,8 +30,7 @@ vector<string> splitString(string str){
 	return vec;
 }
 
-
-int find(string tipo)
+int findSym(string tipo)
 {
     for (int i = 0; i < SYM; ++i)
     {
@@ -46,7 +47,8 @@ private:
 	vector<string> types;
 public:
 	Parser(vector<Token> tokens);
-	void readCSV(char *csv);
+	void readLRS(char *csv);
+	void readFF(char *csv);
 	void parse();
 	void getTypes();
 };
@@ -54,24 +56,47 @@ public:
 Parser::Parser(vector<Token> tokens)
 {
 	this->tokens = tokens;
-	readCSV((char*) "Tabela LRS.csv");
+	readLRS((char*) "Tabela LRS.csv");
+	readFF((char*) "FF-Sets.csv");
 	getTypes();
 }
 
-void Parser::readCSV(char *csv)
+void Parser::readLRS(char *csv)
 {
-	int i = 0;
+	int i, j;
     ifstream  data(csv);
     string line;
+
+    i=0;
     while(getline(data,line))
     {
         stringstream lineStream(line);
         string cell;
-
-        int j=0;
+        j=0;
         while(getline(lineStream,cell,';'))
         {
-            LRS[i][j] = cell;
+        	LRS[i][j] = cell;
+            j++;
+        }
+        i++;
+    }
+}
+
+void Parser::readFF(char *csv)
+{
+	int i, j;
+    ifstream  data(csv);
+    string line;
+
+    i=0;
+    while(getline(data,line))
+    {
+        stringstream lineStream(line);
+        string cell;
+        j=0;
+        while(getline(lineStream,cell,';'))
+        {
+        	FF_SET[i][j] = cell;
             j++;
         }
         i++;
@@ -93,7 +118,6 @@ void Parser::getTypes()
 			types.push_back(tipo);
 		else
 			types.push_back(t.getLex());
-
 	}
 
 	types.push_back("$");
@@ -101,56 +125,39 @@ void Parser::getTypes()
 
 void Parser::parse()
 {
-	int col;
-	int i = 0;
+	int sym, action, n, i=0;
 	int state = 0;
-	string tipo, str;
+	string lookAhead = "dummy" ;
+	stack<pair<int,string>> parse_table;
 	vector<string> vec;
-	stack<int> states;
-	stack<string> pars;
+	parse_table.push(make_pair(state, lookAhead));
 
-	states.push(state);
-	pars.push(types[i]);
-	tipo = pars.top();
-
-	while(true)
+	 while(true)
 	{
-		col = find(tipo);
-		state=states.top();
-		vec=splitString(LRS[state][col]);
+		lookAhead = types[i];
+		state = parse_table.top().first;
+		sym  = findSym(lookAhead);
+		action = stoi(LRS[state][sym]);
 
-		if (vec[0] == "0" || vec[0] == "accept")
-			break;
-		if(vec[0] == "shift"){
-			states.push(stoi(vec[1]));
+		if (action == 0 || action == 9999)
+			 	break;
+		else if(action > 0){
+			state = action;
+			parse_table.push(make_pair(state, lookAhead));
 			i++;
-
-			tipo = types[i];
-			pars.push(tipo);
-		}
-		else if (find(vec[0]) != -1)
-		{
-			int red = stoi(vec[1]);
-			string temp = pars.top();
-			pars.pop();
-			for (int i = 0; i < red; ++i)
-			{
-				pars.pop();
-				states.pop();
-			}
-			pars.push(vec[0]);
-			tipo = pars.top();
-			pars.push(temp);
 		}
 		else
 		{
-			states.push(stoi(vec[0]));
-			tipo = types[i];
+			n = -action % 100;
+			sym = (-action - n) / 100;
+			for (int j = 0; j < n; ++j)
+			   	parse_table.pop();
+			state = parse_table.top().first;
+			parse_table.push(make_pair(stoi(LRS[state][sym]), tab_symbols[sym]));
 		}
+	 }
 
-	}
-
-	if(vec[0] == "0")
+	if(action == 0)
 		cout << "--Programa Finalizado--\n PARSER INCORRETO!!\n";
 	else{
 		cout << "--Programa Finalizado Corretamente--\n";
