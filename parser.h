@@ -3,32 +3,17 @@
 #include <string.h>
 #include <string>
 #include <utility>
+#include "ast.h"
 #include "token.h"
 
-#define SYM 57
+#define SYM 59
 
 using namespace std;
 
-static const string tab_symbols[SYM] ={ "ID", ";", "[", "NUM", "]", "int", "void", "(", ")", ",", "{", "}", "if", "else", "while",	"return", "=", 	"<=", "<", ">",	">=", "==",	"!=", "+", "-", "*", "/", "$", "program", "declaration-list",	"declaration", "var-declaration", "fun-declaration", "type-specifier", "params", "compound-stmt", "param-list", "param", "local-declarations", "statement-list", "statement", 	"expression-stmt", "selection-stmt", "iteration-stmt", "return-stmt", "expression",	"var", "simple-expression", "additive-expression", "relop", "addop", "term", "mulop", "factor", "call", "args", "arg-list"};
+static const string tab_symbols[SYM] ={ "ID", ";", "[", "NUM", "]", "int", "void", "(", ")", ",", "{", "}", "if", "else", "while",	"return", "=", 	"<=", "<", ">",	">=", "==",	"!=", "+", "-", "*", "/", "$", "program", "declaration-list",	"declaration", "var-declaration", "fun-declaration", "type-specifier", "params", "compound-stmt", "param-list", "param", "local-declarations", "statement-list", "statement", 	"expression-stmt", "selection-stmt", "iteration-stmt", "return-stmt", "expression","selection-stmt'", "selection-stmt''", "var", "simple-expression", "additive-expression", "relop", "addop", "term", "mulop", "factor", "call", "args", "arg-list"};
 
-string LRS[101][SYM];
+string LRS[106][SYM];
 string FF_SET[30][3];
-
-vector<string> splitString(string str){
-
-	char *dup, *pch;
-	vector<string> vec;
-
-	dup = strdup(str.c_str());
-	pch = strtok(dup, ",");
-
-	while (pch != NULL)
-	{
-		vec.push_back(pch);
-		pch = strtok (NULL, ",");
-	}
-	return vec;
-}
 
 int findSym(string tipo)
 {
@@ -50,15 +35,17 @@ public:
 	void readLRS(char *csv);
 	void readFF(char *csv);
 	void parse();
-	void getTypes();
+	string getType(int i);
 };
 
 Parser::Parser(vector<Token> tokens)
 {
 	this->tokens = tokens;
+	Token token;
+	token.setToken(0, "$","$");
+	this->tokens.push_back(token);
 	readLRS((char*) "Tabela LRS.csv");
 	readFF((char*) "FF-Sets.csv");
-	getTypes();
 }
 
 void Parser::readLRS(char *csv)
@@ -103,24 +90,17 @@ void Parser::readFF(char *csv)
     }
 }
 
-void Parser::getTypes()
+string Parser::getType(int i)
 {
-	vector<Token>::iterator it;
 	Token t;
 	string tipo;
 
-	 for (it = tokens.begin(); it != tokens.end(); ++it)
-	{
-		t = *it;
-		tipo = t.getType();
-
-		if (tipo == "NUM" || tipo == "ID")
-			types.push_back(tipo);
-		else
-			types.push_back(t.getLex());
-	}
-
-	types.push_back("$");
+	t = tokens[i];
+	tipo = t.getType();
+	if (tipo == "NUM" || tipo == "ID")
+		return tipo;
+	else
+		return t.getLex();
 }
 
 void Parser::parse()
@@ -129,34 +109,50 @@ void Parser::parse()
 	int state = 0;
 	string lookAhead = "dummy" ;
 	stack<pair<int,string>> parse_table;
-	vector<string> vec;
+	stack<AstNode> tree;
 	parse_table.push(make_pair(state, lookAhead));
 
-	 while(true)
+	while(true)
 	{
-		lookAhead = types[i];
+		lookAhead = getType(i);
 		state = parse_table.top().first;
 		sym  = findSym(lookAhead);
 		action = stoi(LRS[state][sym]);
-
-		if (action == 0 || action == 9999)
+		if (action == 0 || action == 999999)
 			 	break;
 		else if(action > 0){
 			state = action;
 			parse_table.push(make_pair(state, lookAhead));
+			AstNode node(tokens[i].getLex());
+			tree.push(node);
 			i++;
 		}
 		else
 		{
-			n = -action % 100;
+			n = -action % 100 ;
 			sym = (-action - n) / 100;
 			for (int j = 0; j < n; ++j)
 			   	parse_table.pop();
 			state = parse_table.top().first;
 			parse_table.push(make_pair(stoi(LRS[state][sym]), tab_symbols[sym]));
+
+			AstNode node(tab_symbols[sym]);
+
+
+			for (int j = 0; j < n; ++j)
+			{
+				// if(tree.top().onlyChild())
+				// 	node.addChild(tree.top().getFirstChild());
+				// else
+				node.addChild(tree.top());
+				tree.pop();
+			}
+			tree.push(node);
 		}
 	 }
 
+	 AstNode node = tree.top();
+	 node.print(0);
 	if(action == 0)
 		cout << "--Programa Finalizado--\n PARSER INCORRETO!!\n";
 	else{
