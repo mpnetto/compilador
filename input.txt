@@ -1,1 +1,12 @@
-int main(void){ x = 3;
+void foo(void)
+{
+}
+
+int bar(void)
+{
+    return foo();
+}
+
+void main(void)
+{
+}
