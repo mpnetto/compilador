@@ -70,7 +70,7 @@ public:
 		bool grandFather = hasGrandChildren();
 		n++;
 
-		if (n < 2)
+		// if (n < 2)
 			for(vector<AstNode>::reverse_iterator it = children.rbegin(); it != children.rend(); ++it)
 			{
 				node = *it;
