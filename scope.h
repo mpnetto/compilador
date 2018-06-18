@@ -12,13 +12,13 @@ class Scope
 {
 	stack<Scope> scopeList;
 	Scope* parent;
-	SymbolTable* symbolTable;
+	SymbolTable symbolTable;
 
 public:
 
-	void addSymbol(Symbol sym)
+	bool addSymbol(Symbol sym)
 	{
-		symbolTable->addSymbol(sym);
+		return symbolTable.addSymbol(sym);
 	}
 
 	Scope enterScope()
@@ -28,22 +28,14 @@ public:
 		scopeList.push(scope);
 
 		return scope;
-
 	}
 
-	void exitScope()
+	Scope* exitScope()
 	{
-		scopeList.pop();
+		return parent;
 	}
 
 	void checkScope();
-
-
-	void removeSymbol()
-	{
-		table.pop();
-	}
-
 };
 
 #endif

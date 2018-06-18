@@ -29,7 +29,6 @@ void lerArquivo(char *nomeArquivo)
 
 void escreverArquivo(char *nomeArquivo, string lex)
 {
-
     ofstream arquivo;
     arquivo.open(nomeArquivo);
 
