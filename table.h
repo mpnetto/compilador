@@ -46,7 +46,6 @@ struct Symbol
 	{
 		return this->name.compare(sym.name);
 	}
-
 };
 
 
@@ -62,7 +61,6 @@ public:
 
 	bool addSymbol(Symbol sym)
 	{
-
 		if(!hasSymbol(sym.name))
 		{
 			table.push_back(sym);
@@ -73,16 +71,16 @@ public:
 
 	bool hasSymbol(string name)
 	{
-			// cout << endl << table.size() << endl;
+			// cout <<" name: " << name <<endl;
 		for(Symbol sym : table){
-			if(!sym.name.compare(name));
+			if(!sym.name.compare(name))
+			{
+				// cout <<" symbol: " << sym.name << " name: " << name <<endl;
 				return true;
+			}
 		}
-
 		return false;
 	}
-
-
 };
 
 #endif

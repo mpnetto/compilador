@@ -1,33 +1,60 @@
 #ifndef _scope_H_
 #define _scope_H_
 
-#include <stack>
+#include <vector>
 #include <string>
 #include "table.h"
 
 using namespace std;
 
-
 class Scope
 {
-	stack<Scope> scopeList;
-	Scope* parent;
-	SymbolTable symbolTable;
+	vector<Scope> scopeList;
+	Scope* parent = NULL;
+	SymbolTable* symbolTable;
+	string id;
 
 public:
 
+	Scope()
+	{
+		symbolTable = new SymbolTable();
+		parent = NULL;
+	}
+	Scope(Scope* par)
+	{
+		symbolTable = new SymbolTable();
+		this->parent = par;
+	}
+	void setScopeId(string id)
+	{
+		this->id = id;
+	}
+
 	bool addSymbol(Symbol sym)
 	{
-		return symbolTable.addSymbol(sym);
+		return symbolTable->addSymbol(sym);
+	}
+
+	void addScope(Scope scope)
+	{
+		scopeList.push_back(scope);
 	}
 
 	Scope enterScope()
 	{
 		Scope scope;
+		scopeList.push_back(scope);
 		scope.parent = this;
-		scopeList.push(scope);
 
 		return scope;
+		// Scope* scope = new Scope();
+		// scope->parent = this;
+
+
+		// scopeList.push_back(scope);
+
+		// return scope;
 	}
 
 	Scope* exitScope()
@@ -35,7 +62,14 @@ public:
 		return parent;
 	}
 
-	void checkScope();
+	bool checkScope(string name)
+	{
+		if(symbolTable->hasSymbol(name))
+			return false;
+		if(parent != NULL)
+			return parent->checkScope(name);
+		return true;
+	}
 };
 
 #endif
