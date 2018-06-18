@@ -9,12 +9,12 @@ using namespace std;
 
 class Scope
 {
+
+public:
 	vector<Scope> scopeList;
 	Scope* parent = NULL;
 	SymbolTable* symbolTable;
 	string id;
-
-public:
 
 	Scope()
 	{
@@ -62,12 +62,31 @@ public:
 		return parent;
 	}
 
-	bool checkScope(string name)
+	string findScope(string name, string typeSpecifier)
 	{
-		if(symbolTable->hasSymbol(name))
+		if(symbolTable->hasSymbol(name, typeSpecifier))
+		{
+			return symbolTable->findSymbol(name, typeSpecifier);
+		}
+		if(parent != NULL)
+			return parent->findScope(name, typeSpecifier);
+		return "";
+	}
+
+	bool checkScope(string name, string typeSpecifier)
+	{
+		if(symbolTable->hasSymbol(name, typeSpecifier))
 			return false;
 		if(parent != NULL)
-			return parent->checkScope(name);
+			return parent->checkScope(name, typeSpecifier);
+		return true;
+	}
+	bool checkScope(string type, int i)
+	{
+
+		if(symbolTable->hasSymbol(type, i))
+			return false;
+
 		return true;
 	}
 };

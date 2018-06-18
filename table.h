@@ -35,7 +35,7 @@ struct Symbol
 		this->type = type;
 	}
 
-	Symbol(string name, string type, string TypeSpecifier)
+	Symbol(string name, string type, string typeSpecifier)
 	{
 		this->name = name;
 		this->type = type;
@@ -71,14 +71,53 @@ public:
 
 	bool hasSymbol(string name)
 	{
-			// cout <<" name: " << name <<endl;
+		cout <<" name: " << name <<endl;
 		for(Symbol sym : table){
 			if(!sym.name.compare(name))
 			{
-				// cout <<" symbol: " << sym.name << " name: " << name <<endl;
+				cout <<" symbol: " << sym.name << " name: " << name <<endl;
 				return true;
 			}
 		}
+		return false;
+	}
+
+	string findSymbol(string name, string typeSpecifier)
+	{
+		cout <<" name: " << name <<endl;
+		for(Symbol sym : table){
+			if(!sym.name.compare(name) && !sym.typeSpecifier.compare(typeSpecifier))
+			{
+				return sym.type;
+			}
+		}
+		return "";
+	}
+
+	bool hasSymbol(string name, string typeSpecifier)
+	{
+		// cout <<" name: " << name <<endl;
+		for(Symbol sym : table){
+				// cout <<" symbol: " << sym.name<<" type: " << sym.type << " typeSpecifier: " << sym.typeSpecifier  <<endl;
+			if(!sym.name.compare(name) && !sym.typeSpecifier.compare(typeSpecifier))
+			{
+
+				return true;
+			}
+		}
+		return false;
+	}
+	bool hasSymbol(string type, int i)
+	{
+		cout << "CHECK:\n";
+
+		Symbol sym = table[i];
+
+		cout <<  " i: " << i << " Symbol: "<< sym.type << " type: " << type<< endl;
+
+		if(!sym.type.compare(type))
+
+			return true;
 		return false;
 	}
 };
