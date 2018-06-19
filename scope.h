@@ -13,17 +13,17 @@ class Scope
 public:
 	vector<Scope> scopeList;
 	Scope* parent = NULL;
-	SymbolTable* symbolTable;
+	SymbolTable symbolTable;
 	string id;
 
 	Scope()
 	{
-		symbolTable = new SymbolTable();
+		//symbolTable = new SymbolTable();
 		parent = NULL;
 	}
 	Scope(Scope* par)
 	{
-		symbolTable = new SymbolTable();
+		//symbolTable = new SymbolTable();
 		this->parent = par;
 	}
 	void setScopeId(string id)
@@ -33,7 +33,7 @@ public:
 
 	bool addSymbol(Symbol sym)
 	{
-		return symbolTable->addSymbol(sym);
+		return symbolTable.addSymbol(sym);
 	}
 
 	void addScope(Scope scope)
@@ -64,9 +64,9 @@ public:
 
 	string findScope(string name, string typeSpecifier)
 	{
-		if(symbolTable->hasSymbol(name, typeSpecifier))
+		if(symbolTable.hasSymbol(name, typeSpecifier))
 		{
-			return symbolTable->findSymbol(name, typeSpecifier);
+			return symbolTable.findSymbol(name, typeSpecifier);
 		}
 		if(parent != NULL)
 			return parent->findScope(name, typeSpecifier);
@@ -75,7 +75,7 @@ public:
 
 	bool checkScope(string name, string typeSpecifier)
 	{
-		if(symbolTable->hasSymbol(name, typeSpecifier))
+		if(symbolTable.hasSymbol(name, typeSpecifier))
 			return false;
 		if(parent != NULL)
 			return parent->checkScope(name, typeSpecifier);
@@ -84,7 +84,8 @@ public:
 	bool checkScope(string type, int i)
 	{
 
-		if(symbolTable->hasSymbol(type, i))
+
+		if(symbolTable.hasSymbol(type, i))
 			return false;
 
 		return true;
