@@ -16,6 +16,33 @@ Scope* findScope(vector<Scope> scopes, string id)
 	return NULL;
 }
 
+
+void escreverArquivo(char **nomeArquivo, string aux, bool error)
+{	
+
+	size_t pos = ((string)nomeArquivo[2]).find(".c");      // position of "." in str
+
+  	string str3 = ((string)nomeArquivo[2]).substr (0,pos);
+    
+    str3 = str3 + ".out";
+
+    //cout << error << "\n";
+    
+    ofstream arquivo;
+    arquivo.open(str3);
+
+    if(arquivo.fail())
+    {
+        perror ("Erro ao abrir o arquivo: " + **nomeArquivo);
+        exit(1);
+    }
+
+    arquivo << aux;
+
+    arquivo.close();
+}
+
+
 class Semantic
 {
 public:
@@ -34,12 +61,13 @@ public:
 		this->tree = tree;
 	}
 
-	void semantic(AstNode node)
+	void semantic(AstNode node, char **nomeArquivo)
 	{
 		localScope = globalScope.enterScope();
 		run(node);
-		if(!error)
-			cout << out<< endl;
+		//if(!error)
+			//cout << out << "\n";
+			escreverArquivo(nomeArquivo, out, error);
 	}
 
 	string run(AstNode node){
