@@ -42,7 +42,7 @@ public:
 			cout << out<< endl;
 	}
 
-	void run(AstNode node){
+	string run(AstNode node){
 
 		if(!node.nodeType.compare("program"))
 		{
@@ -50,8 +50,8 @@ public:
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				run(*child);
-
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("declaration-list"))
 		{
@@ -61,6 +61,7 @@ public:
 				if (node.hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("declaration"))
 		{
@@ -70,6 +71,7 @@ public:
 				if (node.hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("var-declaration"))
 		{
@@ -100,8 +102,8 @@ public:
 			Symbol sym(name, type, typeSpecifier);
 
 			error = error || localScope.addSymbol(sym);
-
 			out +="]";
+			return "";
 		}
 		else if(!node.nodeType.compare("fun-declaration"))
 		{
@@ -136,8 +138,8 @@ public:
 			Symbol sym(name, type, typeSpecifier);
 
 			error = error || globalScope.addSymbol(sym);
-
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("params"))
 		{
@@ -149,6 +151,7 @@ public:
 					run(*child);
 			}
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("param-list"))
 		{
@@ -158,6 +161,7 @@ public:
 				if (!child->nodeType.compare("param-list") || !child->nodeType.compare("param"))
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("param"))
 		{
@@ -194,6 +198,7 @@ public:
 			error = error || localScope.addSymbol(sym);
 
 			out +="]";
+			return "";
 		}
 		else if(!node.nodeType.compare("compound-stmt"))
 		{
@@ -205,6 +210,7 @@ public:
 					run(*child);
 			}
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("local-declarations"))
 		{
@@ -214,6 +220,7 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("statement-list"))
 		{
@@ -223,6 +230,7 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("statement"))
 		{
@@ -232,6 +240,7 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("expression-stmt"))
 		{
@@ -247,6 +256,7 @@ public:
 
 			if(node.onlyChild())
 					out +="\n[;]";
+			return "";
 		}
 		else if(!node.nodeType.compare("selection-stmt"))
 		{
@@ -258,6 +268,7 @@ public:
 					run(*child);
 			}
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("selection-stmt'"))
 		{
@@ -267,7 +278,7 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
-
+			return "";
 		}
 		else if(!node.nodeType.compare("selection-stmt''"))
 		{
@@ -277,6 +288,7 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			return "";
 		}
 		else if(!node.nodeType.compare("iteration-stmt"))
 		{
@@ -287,7 +299,9 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("return-stmt"))
 		{
@@ -299,23 +313,37 @@ public:
 					run(*child);
 			}
 			out += "]";
+			return "";
 		}
 		else if(!node.nodeType.compare("expression"))
 		{
 			bool expr = false;
+			string temp, type = "";
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
+			{
 				if(!child->nodeToken.compare("="))
 				{
 					out +="\n[=";
 					expr = true;
 				}
+			}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				if(child->hasChildren())
-					run(*child);
+				{
+					temp = run(*child);
+					if(temp!="")
+					{
+						if(type == "" || type == temp)
+							type = temp;
+						else
+							error=true;
+					}
+				}
 
 			if(expr)
 				out += "]";
+			return type;
 		}
 		else if(!node.nodeType.compare("var"))
 		{
@@ -332,18 +360,18 @@ public:
 				else if(node.hasChildren())
 					run(*child);
 			}
+			string type = localScope.findScope(name, "VARIABLE");
 			if(!call)
 				error = error || localScope.checkScope(name, "VARIABLE");
 			else
-			{
-				string type = localScope.findScope(name, "VARIABLE");
 				error = error || callScope.checkScope(type, callCount);
-			}
 			out += "]";
+			return type;
 		}
 		else if(!node.nodeType.compare("simple-expression"))
 		{
 			bool relop = false;
+			string type;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				if(!child->nodeType.compare("relop"))
@@ -357,9 +385,11 @@ public:
 
 			if(relop)
 				out += "]";
+			return type;
 		}
 		else if(!node.nodeType.compare("additive-expression"))
 		{
+			string temp, type = "";
 			bool addop = false;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
@@ -369,15 +399,32 @@ public:
 					out += "\n[" + child->getFirstChild().nodeToken;
 				}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
+			{
 				if (child->hasChildren())
-					run(*child);
+				{
+
+					temp = run(*child);
+					if(temp!="")
+					{
+						if(type == "" || type == temp)
+						{
+							type = temp;
+						}
+						else
+							error=true;
+					}
+
+				}
+			}
 
 			if(addop)
 				out += "]";
+			return type;
 		}
 		else if(!node.nodeType.compare("term"))
 		{
 			bool mulop = false;
+			string temp, type="";
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				if(!child->nodeType.compare("mulop")){
@@ -385,34 +432,49 @@ public:
 					mulop = true;
 				}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
+			{
 				if (child->hasChildren())
-					run(*child);
+				{
+					temp = run(*child);
+					if(temp!="")
+					{
+						if(type == "" || type == temp)
+						{
+							type = temp;
+						}
+						else
+							error=true;
+					}
+				}
+			}
 
 			if(mulop)
 				out += "]";
+			return type;
 		}
 		else if(!node.nodeType.compare("factor"))
 		{
 			if(call)
 				callCount++;
+			string checktype;
 			vector<AstNode> children = node.getChildren();
 			string type = "";
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
 				if(!child->nodeType.compare("NUM"))
 				{
-					type = "int";
+					checktype = "int";
 
 					out +=" [" +  child->nodeToken +"]";
 				}
 				else if(child->hasChildren())
-					run(*child);
+					type = run(*child);
 			}
-			if(call && type != "")
+			if(call && checktype != "")
 			{
-				cout << "NUMMMMMMMM\n";
-				error = error || callScope.checkScope(type, callCount);
+				error = error || callScope.checkScope(checktype, callCount);
 			}
+			return type;
 		}
 		else if(!node.nodeType.compare("call"))
 		{
@@ -439,9 +501,11 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			string type = globalScope.findScope(name, "FUNCTION");
 			error = error || globalScope.checkScope(name, "FUNCTION");
 			call = false;
 			out +="]";
+			return type;
 		}
 		else if(!node.nodeType.compare("args"))
 		{
@@ -453,6 +517,7 @@ public:
 					run(*child);
 			}
 			out +="]";
+			return "";
 		}
 		else if(!node.nodeType.compare("arg-list"))
 		{
@@ -462,6 +527,8 @@ public:
 				if(child->hasChildren())
 					run(*child);
 			}
+			return "";
 		}
+		return "";
 	}
 };
