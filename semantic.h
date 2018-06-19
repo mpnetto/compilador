@@ -371,7 +371,7 @@ public:
 		else if(!node.nodeType.compare("simple-expression"))
 		{
 			bool relop = false;
-			string type;
+			string temp, type = "";
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				if(!child->nodeType.compare("relop"))
@@ -380,8 +380,25 @@ public:
 						out += "\n[" + child->getFirstChild().nodeToken;
 					}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
-				if(node.hasChildren())
-					run(*child);
+			{
+				if (child->hasChildren())
+				{
+										
+					temp = run(*child);
+
+					if(temp!="")
+					{
+						if(type == "" || type == temp)
+						{
+							type = temp;
+						}
+						else
+							error=true;
+					}
+
+
+				}
+			}
 
 			if(relop)
 				out += "]";
@@ -402,8 +419,10 @@ public:
 			{
 				if (child->hasChildren())
 				{
+										
 
 					temp = run(*child);
+
 					if(temp!="")
 					{
 						if(type == "" || type == temp)
@@ -413,6 +432,7 @@ public:
 						else
 							error=true;
 					}
+
 
 				}
 			}
@@ -505,6 +525,7 @@ public:
 			error = error || globalScope.checkScope(name, "FUNCTION");
 			call = false;
 			out +="]";
+
 			return type;
 		}
 		else if(!node.nodeType.compare("args"))

@@ -155,8 +155,8 @@ void Parser::parse()
 		}
 	 }
 	 // cout << "size: " << tree.size()<< endl;
-	  // AstNode node = tree.top();
-	  // node.print(0);
+	 //  AstNode node = tree.top();
+	 //  node.print(0);
 //	if(action == 0)
 //		cout << "--Programa Finalizado--\n PARSER INCORRETO!!\n";
 //	else{
