@@ -7,13 +7,13 @@
 
 using namespace std;
 
-
 class AstNode
 {
 public:
 	AstNode	*parent;
 	vector<AstNode> children;
 	string nodeType;
+	string nodeToken;
 
 	AstNode()
 	{
@@ -22,6 +22,12 @@ public:
 	AstNode(string type)
 	{
 		nodeType = type;
+	}
+
+	AstNode(string type, string token)
+	{
+		nodeType = type;
+		nodeToken = token;
 	}
 
 	void setType(string type)
@@ -33,6 +39,11 @@ public:
 	{
 		child.parent = this;
 		children.push_back(child);
+	}
+
+	vector<AstNode> getChildren()
+	{
+		return children;
 	}
 
 	AstNode getFirstChild()
@@ -59,7 +70,6 @@ public:
 				return true;
 		}
 		return false;
-
 	}
 
 	void print(int n) {

@@ -14,6 +14,7 @@ static const string tab_symbols[SYM] ={ "ID", ";", "[", "NUM", "]", "int", "void
 
 string LRS[106][SYM];
 string FF_SET[30][3];
+stack<AstNode> tree;
 
 int findSym(string tipo)
 {
@@ -109,21 +110,25 @@ void Parser::parse()
 	int state = 0;
 	string lookAhead = "dummy" ;
 	stack<pair<int,string>> parse_table;
-	stack<AstNode> tree;
 	parse_table.push(make_pair(state, lookAhead));
+
+
 
 	while(true)
 	{
+
 		lookAhead = getType(i);
 		state = parse_table.top().first;
 		sym  = findSym(lookAhead);
 		action = stoi(LRS[state][sym]);
+
+		// cout << "state: " << state << " sym: " << sym << " lookAhead: " << lookAhead << " symbol: "<< parse_table.top().second << endl;
 		if (action == 0 || action == 999999)
 			 	break;
 		else if(action > 0){
 			state = action;
 			parse_table.push(make_pair(state, lookAhead));
-			AstNode node(tokens[i].getLex());
+			AstNode node(tokens[i].getType(),tokens[i].getLex());
 			tree.push(node);
 			i++;
 		}
@@ -135,28 +140,27 @@ void Parser::parse()
 			   	parse_table.pop();
 			state = parse_table.top().first;
 			parse_table.push(make_pair(stoi(LRS[state][sym]), tab_symbols[sym]));
-
 			AstNode node(tab_symbols[sym]);
-
 
 			for (int j = 0; j < n; ++j)
 			{
 				// if(tree.top().onlyChild())
 				// 	node.addChild(tree.top().getFirstChild());
 				// else
+
 				node.addChild(tree.top());
 				tree.pop();
 			}
 			tree.push(node);
 		}
 	 }
-
-	 AstNode node = tree.top();
-	 node.print(0);
-	if(action == 0)
-		cout << "--Programa Finalizado--\n PARSER INCORRETO!!\n";
-	else{
-		cout << "--Programa Finalizado Corretamente--\n";
-	}
+	 // cout << "size: " << tree.size()<< endl;
+	  // AstNode node = tree.top();
+	  // node.print(0);
+//	if(action == 0)
+//		cout << "--Programa Finalizado--\n PARSER INCORRETO!!\n";
+//	else{
+//		cout << "--Programa Finalizado Corretamente--\n";
+//	}
 }
 
