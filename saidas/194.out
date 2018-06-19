@@ -1,0 +1,8 @@
+[program
+[fun-declaration
+[void]
+[main]
+[params]
+[compound-stmt
+[iteration-stmt [1]
+[compound-stmt]]]]]

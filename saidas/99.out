@@ -1,0 +1,7 @@
+[program
+[fun-declaration
+[int]
+[main]
+[params]
+[compound-stmt
+[return-stmt [1]]]]]
