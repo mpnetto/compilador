@@ -154,6 +154,9 @@ void Parser::parse()
 			tree.push(node);
 		}
 	 }
+	 if(action == 0)
+	 	while(!tree.empty())
+	 		tree.pop();
 	  // cout << "size: " << tree.size()<< endl;
 	  // AstNode node = tree.top();
 	  // node.print(0);
