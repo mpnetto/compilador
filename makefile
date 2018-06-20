@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -std=c++0x
 LDFLAGS =
 OBJFILES = main.o
-TARGET = compilador
+TARGET = sintatico
 HEADERS = lexico.h parser.h semantic.h
 
 

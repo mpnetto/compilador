@@ -37,14 +37,14 @@ public:
 		this->tree = tree;
 	}
 
-	void semantic(AstNode node, char **nomeArquivo)
+	void semantic(AstNode node)
 	{
 		localScope =localScope = new Scope(globalScope);
 		run(node);
 		if(!error)
 			cout << out;
-		if(error)
-			out == "";
+		else
+			out = "";
 
 	}
 
@@ -66,11 +66,9 @@ public:
 
 	string run(AstNode node){
 
-			cout << "PROGRAM" << node.nodeType << endl;
-
 		if(!node.nodeType.compare("program"))
 		{
-			
+
 			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
@@ -148,7 +146,7 @@ public:
 					out += "\n[" + name + "]";
 					localScope = new Scope(localScope);
 					localScope.setScopeId(name);
-					
+
 				}
 				else if (!child->nodeType.compare("type-specifier"))
 				{
@@ -158,7 +156,7 @@ public:
 			}
 
 			Symbol sym(name, type, typeSpecifier);
-			
+
 
 			error = error || globalScope.addSymbol(sym);
 
@@ -169,13 +167,9 @@ public:
 					run(*child);
 			}
 
-			
+
 			scopes.push_back(localScope);
 			localScope = *localScope.exitScope();
-
-			
-
-			
 			out += "]";
 			return "";
 		}
@@ -282,12 +276,14 @@ public:
 		}
 		else if(!node.nodeType.compare("statement"))
 		{
+
 			string temp, type = "";
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
 				if(child->hasChildren())
 				{
+
 					temp = run(*child);
 					if(temp!="")
 					{
@@ -298,6 +294,7 @@ public:
 					}
 				}
 			}
+
 			return type;
 		}
 		else if(!node.nodeType.compare("expression-stmt"))
@@ -309,7 +306,10 @@ public:
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
 				if(child->hasChildren())
+				{
 					run(*child);
+				}
+
 			}
 
 			if(node.onlyChild())
@@ -355,7 +355,10 @@ public:
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
 				if(child->hasChildren())
+				{
+
 					run(*child);
+				}
 			}
 
 			out += "]";
@@ -381,12 +384,11 @@ public:
 				}
 			}
 
-			string global =  globalScope.findScope("main", "FUNCTION");
-
+			string global =  globalScope.findScope(localScope.id, "FUNCTION");
 
 			if((global == "void" && type != "") || (global != "void" && global != type))
 				error = true;
-			
+
 			out += "]";
 			return type;
 		}
@@ -404,6 +406,7 @@ public:
 				}
 			}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
+			{
 				if(child->hasChildren())
 				{
 					temp = run(*child);
@@ -415,14 +418,16 @@ public:
 							error=true;
 					}
 				}
+			}
 
 			if(expr)
 				out += "]";
+
 			return type;
 		}
 		else if(!node.nodeType.compare("var"))
 		{
-			string name, array="";
+			string name, array="", temp = "";
 			out += " [" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
@@ -435,20 +440,23 @@ public:
 				else if(child->nodeToken.compare("["))
 					array = "ARRAY";
 
-				else if(node.hasChildren())
-					run(*child);
+				if(child->hasChildren())
+					temp = run(*child);
 			}
 			string type = localScope.findScope(name, "VARIABLE");
 
-			if(array!= "" && array != type)
+			if (type == "ARRAY" && temp == "int")
+				type = "int";
+			else if(array!= "" && array != type)
 				error = true;
- 
+
 			if(!call)
 				error = error || localScope.checkScope(name, "VARIABLE");
 			else
 			{
 				error = error || callScope.checkScope(type, callCount);
 			}
+
 			out += "]";
 			return type;
 		}
@@ -467,7 +475,7 @@ public:
 			{
 				if (child->hasChildren())
 				{
-										
+
 					temp = run(*child);
 
 					if(temp!="")
@@ -503,7 +511,7 @@ public:
 			{
 				if (child->hasChildren())
 				{
-										
+
 
 					temp = run(*child);
 
