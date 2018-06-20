@@ -27,22 +27,6 @@ void lerArquivo(char *nomeArquivo)
     fclose (arquivo);
 }
 
-void escreverArquivo(char *nomeArquivo, string lex)
-{
-    ofstream arquivo;
-    arquivo.open(nomeArquivo);
-
-    if(arquivo.fail())
-    {
-        perror ("Erro ao abrir o arquivo: " + *nomeArquivo);
-        exit(1);
-    }
-
-    arquivo << lex;
-
-    arquivo.close();
-}
-
 char getChar()
 {
   char c = texto[++apontador];

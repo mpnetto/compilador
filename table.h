@@ -71,11 +71,9 @@ public:
 
 	bool hasSymbol(string name)
 	{
-		// cout <<" name: " << name <<endl;
 		for(Symbol sym : table){
 			if(!sym.name.compare(name))
 			{
-				// cout <<" symbol: " << sym.name << " name: " << name <<endl;
 				return true;
 			}
 		}
@@ -84,7 +82,6 @@ public:
 
 	string findSymbol(string name, string typeSpecifier)
 	{
-		// cout <<" name: " << name <<endl;
 		for(Symbol sym : table){
 			if(!sym.name.compare(name) && !sym.typeSpecifier.compare(typeSpecifier))
 			{
@@ -96,7 +93,7 @@ public:
 
 	bool hasSymbol(string name, string typeSpecifier)
 	{
-		// cout <<" name: " << name <<endl;
+		// cout << table.size() << endl;
 		for(Symbol sym : table){
 				// cout <<" symbol: " << sym.name<<" type: " << sym.type << " typeSpecifier: " << sym.typeSpecifier  <<endl;
 			if(!sym.name.compare(name) && !sym.typeSpecifier.compare(typeSpecifier))
@@ -110,13 +107,13 @@ public:
 	bool hasSymbol(string type, int i)
 	{
 
-		Symbol sym = table[i];
-
-		// cout <<  " i: " << i << " Symbol: "<< sym.type << " type: " << type<< endl;
-
-		if(!sym.type.compare(type))
-
+		if(i < table.size())
+		{
+			Symbol sym = table[i];
+			if(!sym.type.compare(type))
 			return true;
+		}
+
 		return false;
 	}
 };

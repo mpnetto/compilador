@@ -3,9 +3,7 @@ CFLAGS = -std=c++0x
 LDFLAGS =
 OBJFILES = main.o
 TARGET = compilador
-HEADERS = lexico.h parser.h
-C_FILES = $(wildcard ./casos/*.c)
-
+HEADERS = lexico.h parser.h semantic.h
 
 
 all: $(TARGET)
@@ -16,9 +14,4 @@ $(OBJFILES): main.cpp $(HEADERS)
 clean:
 	rm -f $(OBJFILES) $(TARGET) *~
 
-run:
-	$(MAKE) all
-	for f in ${C_FILES}; do ./$(TARGET) $$f; done
 
-show_vars:
-	@echo ${C_FILES}
