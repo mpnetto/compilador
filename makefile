@@ -13,5 +13,3 @@ $(OBJFILES): main.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c main.cpp
 clean:
 	rm -f $(OBJFILES) $(TARGET) *~
-
-

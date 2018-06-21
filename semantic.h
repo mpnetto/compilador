@@ -6,6 +6,9 @@
 
 using namespace std;
 
+string out = "";
+bool semError = false;
+
 Scope findScope(vector<Scope> scopes, string id)
 {
 	for(vector<Scope>::iterator it = scopes.begin(); it != scopes.end(); ++it)
@@ -18,6 +21,23 @@ Scope findScope(vector<Scope> scopes, string id)
 	return scope;
 }
 
+void escreverArquivo(char *nomeArquivo)
+{
+    ofstream arquivo;
+    arquivo.open(nomeArquivo);
+
+    if(arquivo.fail())
+    {
+        perror ("Erro ao abrir o arquivo: " + *nomeArquivo);
+        exit(1);
+    }
+
+    if(!semError && out != "")
+    	arquivo << out;
+
+    arquivo.close();
+}
+
 
 class Semantic
 {
@@ -27,8 +47,6 @@ public:
 	Scope globalScope;
 	Scope localScope;
 	Scope callScope;
-	string out = "";
-	bool error = false;
 	bool call = false;
 	int callCount=0;
 
@@ -41,28 +59,9 @@ public:
 	{
 		localScope =localScope = new Scope(globalScope);
 		run(node);
-		if(!error)
-			cout << out;
-		else
-			out = "";
 
 	}
 
-	void escreverArquivo(char *nomeArquivo)
-	{
-	    ofstream arquivo;
-	    arquivo.open(nomeArquivo);
-
-	    if(arquivo.fail())
-	    {
-	        perror ("Erro ao abrir o arquivo: " + *nomeArquivo);
-	        exit(1);
-	    }
-
-	    arquivo << out;
-
-	    arquivo.close();
-	}
 
 	string run(AstNode node){
 
@@ -99,7 +98,7 @@ public:
 		else if(!node.nodeType.compare("var-declaration"))
 
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 
 			string name;
 			string type;
@@ -110,28 +109,28 @@ public:
 				if(!child->nodeType.compare("ID"))
 				{
 					name = child->nodeToken;
-					out += " [" + name +"]";
+					out += "[" + name +"]";
 				}
 				else if (!child->nodeType.compare("type-specifier"))
 				{
 					type = child->getFirstChild().nodeToken;
-					out +=" ["+ type + "]";
+					out +="["+ type + "]";
 				}
 				else if (!child->nodeType.compare("NUM"))
-					out +=" ["+ child->nodeToken + "]";
+					out +="["+ child->nodeToken + "]";
 				else if (!child->nodeToken.compare("["))
 					type = "ARRAY";
 			}
 
 			Symbol sym(name, type, typeSpecifier);
 
-			error = error || localScope.addSymbol(sym);
+			semError = semError || localScope.addSymbol(sym);
 			out +="]";
 			return "";
 		}
 		else if(!node.nodeType.compare("fun-declaration"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 
 			string name;
 			string type;
@@ -143,7 +142,7 @@ public:
 				if(!child->nodeType.compare("ID"))
 				{
 					name = child->nodeToken;
-					out += "\n[" + name + "]";
+					out += "[" + name + "]";
 					localScope = new Scope(localScope);
 					localScope.setScopeId(name);
 
@@ -151,14 +150,14 @@ public:
 				else if (!child->nodeType.compare("type-specifier"))
 				{
 					type = child->getFirstChild().nodeToken;
-					out += "\n[" + type + "]";
+					out += "[" + type + "]";
 				}
 			}
 
 			Symbol sym(name, type, typeSpecifier);
 
 
-			error = error || globalScope.addSymbol(sym);
+			semError = semError || globalScope.addSymbol(sym);
 
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -175,7 +174,7 @@ public:
 		}
 		else if(!node.nodeType.compare("params"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -197,7 +196,7 @@ public:
 		}
 		else if(!node.nodeType.compare("param"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			string name;
 			string type;
 			string typeSpecifier = "VARIABLE";
@@ -207,12 +206,12 @@ public:
 				if(!child->nodeType.compare("ID"))
 				{
 					name = child->nodeToken;
-					out += " ["+ name + "]";
+					out += "["+ name + "]";
 				}
 				else if (!child->nodeType.compare("type-specifier"))
 				{
 					type = child->getFirstChild().nodeToken;
-					out += " [" + type+ "]";
+					out += "[" + type+ "]";
 				}
 				else if (!child->nodeToken.compare("["))
 				{
@@ -227,14 +226,14 @@ public:
 
 			Symbol sym(name, type, typeSpecifier);
 
-			error = error || localScope.addSymbol(sym);
+			semError = semError || localScope.addSymbol(sym);
 
 			out +="]";
 			return "";
 		}
 		else if(!node.nodeType.compare("compound-stmt"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for (vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -268,7 +267,7 @@ public:
 						if(type == "" || type == temp)
 							type = temp;
 						else
-							error=true;
+							semError=true;
 					}
 				}
 			}
@@ -290,7 +289,7 @@ public:
 						if(type == "" || type == temp)
 							type = temp;
 						else
-							error=true;
+							semError=true;
 					}
 				}
 			}
@@ -313,12 +312,12 @@ public:
 			}
 
 			if(node.onlyChild())
-					out +="\n[;]";
+					out +="[;]";
 			return "";
 		}
 		else if(!node.nodeType.compare("selection-stmt"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -350,7 +349,7 @@ public:
 		}
 		else if(!node.nodeType.compare("iteration-stmt"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -367,7 +366,7 @@ public:
 		else if(!node.nodeType.compare("return-stmt"))
 		{
 			string temp, type = "";
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -379,7 +378,7 @@ public:
 						if(type == "" || type == temp)
 							type = temp;
 						else
-							error=true;
+							semError=true;
 					}
 				}
 			}
@@ -387,7 +386,7 @@ public:
 			string global =  globalScope.findScope(localScope.id, "FUNCTION");
 
 			if((global == "void" && type != "") || (global != "void" && global != type))
-				error = true;
+				semError = true;
 
 			out += "]";
 			return type;
@@ -401,7 +400,7 @@ public:
 			{
 				if(!child->nodeToken.compare("="))
 				{
-					out +="\n[=";
+					out +="[=";
 					expr = true;
 				}
 			}
@@ -415,7 +414,7 @@ public:
 						if(type == "" || type == temp)
 							type = temp;
 						else
-							error=true;
+							semError=true;
 					}
 				}
 			}
@@ -428,14 +427,14 @@ public:
 		else if(!node.nodeType.compare("var"))
 		{
 			string name, array="", temp = "";
-			out += " [" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
 				if(!child->nodeType.compare("ID"))
 				{
 					name = child->nodeToken;
-					out += " [" + child->nodeToken + "]";
+					out += "[" + child->nodeToken + "]";
 				}
 				else if(child->nodeToken.compare("["))
 					array = "ARRAY";
@@ -448,13 +447,13 @@ public:
 			if (type == "ARRAY" && temp == "int")
 				type = "int";
 			else if(array!= "" && array != type)
-				error = true;
+				semError = true;
 
 			if(!call)
-				error = error || localScope.checkScope(name, "VARIABLE");
+				semError = semError || localScope.checkScope(name, "VARIABLE");
 			else
 			{
-				error = error || callScope.checkScope(type, callCount);
+				semError = semError || callScope.checkScope(type, callCount);
 			}
 
 			out += "]";
@@ -469,7 +468,7 @@ public:
 				if(!child->nodeType.compare("relop"))
 					{
 						relop = true;
-						out += "\n[" + child->getFirstChild().nodeToken;
+						out += "[" + child->getFirstChild().nodeToken;
 					}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -485,7 +484,7 @@ public:
 							type = temp;
 						}
 						else
-							error=true;
+							semError=true;
 					}
 
 
@@ -505,7 +504,7 @@ public:
 				if(!child->nodeType.compare("addop"))
 				{
 					addop = true;
-					out += "\n[" + child->getFirstChild().nodeToken;
+					out += "[" + child->getFirstChild().nodeToken;
 				}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
@@ -522,7 +521,7 @@ public:
 							type = temp;
 						}
 						else
-							error=true;
+							semError=true;
 					}
 
 
@@ -540,7 +539,7 @@ public:
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 				if(!child->nodeType.compare("mulop")){
-					out += "\n[" + child->getFirstChild().nodeToken;
+					out += "[" + child->getFirstChild().nodeToken;
 					mulop = true;
 				}
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
@@ -555,7 +554,7 @@ public:
 							type = temp;
 						}
 						else
-							error=true;
+							semError=true;
 					}
 				}
 			}
@@ -577,14 +576,14 @@ public:
 				{
 					checktype = "int";
 
-					out +=" [" +  child->nodeToken +"]";
+					out +="[" +  child->nodeToken +"]";
 				}
 				else if(child->hasChildren())
 					type = run(*child);
 			}
 			if(call && checktype != "")
 			{
-				error = error || callScope.checkScope(checktype, callCount);
+				semError = semError || callScope.checkScope(checktype, callCount);
 			}
 			if(type == "")
 				return checktype;
@@ -594,7 +593,7 @@ public:
 		{
 			call = true;
 			callCount = -1;
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			string name;
 			vector<AstNode> children = node.getChildren();
 
@@ -608,17 +607,17 @@ public:
 
 
 					if(sco.id == "0")
-						error = true;
+						semError = true;
 					else
 						callScope = sco;
 
-					out +="\n[" +  child->nodeToken +"]";
+					out +="[" +  child->nodeToken +"]";
 				}
 				if(child->hasChildren())
 					run(*child);
 			}
 			string type = globalScope.findScope(name, "FUNCTION");
-			error = error || globalScope.checkScope(name, "FUNCTION");
+			semError = semError || globalScope.checkScope(name, "FUNCTION");
 			call = false;
 			out +="]";
 
@@ -626,7 +625,7 @@ public:
 		}
 		else if(!node.nodeType.compare("args"))
 		{
-			out += "\n[" + node.nodeType;
+			out += "[" + node.nodeType;
 			vector<AstNode> children = node.getChildren();
 			for ( vector<AstNode>::reverse_iterator child = children.rbegin(); child != children.rend(); ++child)
 			{
